@@ -11,3 +11,4 @@ bindgen = "0.47"
 
 [dev-dependencies]
 structopt = "0.2"
+walkdir = "2.2"
