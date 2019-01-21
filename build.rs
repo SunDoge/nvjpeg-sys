@@ -9,6 +9,7 @@ fn main() {
     // Tell cargo to tell rustc to link the system bzip2
     // shared library.
     println!("cargo:rustc-link-lib=nvjpeg");
+    println!("cargo:rustc-link-lib=cudart");
 
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
@@ -21,6 +22,7 @@ fn main() {
         // It is not used by other, so ignore it.
         .clang_arg(format!("-I{}", cuda_path.join("include").display()))
         .blacklist_type("max_align_t")
+        .derive_default(true)
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.
