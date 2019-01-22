@@ -14,22 +14,28 @@ type FileData = Vec<Vec<u8>>;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "basic")]
 struct Opt {
-    #[structopt(short = "i")]
+    #[structopt(name = "images_dir", short = "i")]
+    /// Path to single image or directory of images
     input_dir: String,
 
     #[structopt(short = "b")]
+    /// Decode images from input by batches of specified size
     batch_size: i32,
 
-    #[structopt(long = "dev")]
+    #[structopt(name = "device_id", long = "dev")]
+    /// Which device to use for decoding
     dev: i32,
 
-    #[structopt(short = "w")]
+    #[structopt(name = "warmup_iterations", short = "w")]
+    /// Run this amount of batches first without measuring performance
     warmup: i32,
 
-    #[structopt(long = "fmt")]
+    #[structopt(name = "output_format", long = "fmt")]
     fmt: nvjpegOutputFormat_t,
 
     #[structopt(short = "t")]
+    /// Decode this much images, if there are less images
+    /// in the input than total images, decoder will loop over the input
     total_images: i32,
 }
 
@@ -182,7 +188,22 @@ fn process_images(
         }
     }
 
+    let mut test_time = 0.0;
+    let mut warmup = 0;
+
+    while total_processed < opt.total_images {}
+
     Ok(0.0)
+}
+
+fn read_next_batch(
+    image_names: &FileNames,
+    batch_size: i32,
+    raw_data: &FileData,
+    raw_len: &Vec<usize>,
+    current_names: &FileNames,
+) -> Option<f64> {
+    None
 }
 
 unsafe extern "C" fn dev_malloc(p: *mut *mut ffi::c_void, s: usize) -> i32 {
