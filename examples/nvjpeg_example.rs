@@ -3,6 +3,8 @@ extern crate structopt;
 
 use nvjpeg_sys::*;
 use std::ffi;
+use std::fs::File;
+use std::io::Read;
 use std::ptr;
 use std::time::{Duration, Instant};
 use structopt::StructOpt;
@@ -119,7 +121,7 @@ fn main() {
         1,
         opt.fmt
     ));
-    let image_names: Vec<String> = WalkDir::new(&opt.input_dir)
+    let mut image_names: Vec<String> = WalkDir::new(&opt.input_dir)
         .into_iter()
         .filter_map(|e| e.ok())
         .map(|e| e.path().to_string_lossy().into())
@@ -140,7 +142,7 @@ fn main() {
         &opt.input_dir, opt.total_images, opt.batch_size
     );
 
-    let total = process_images(&image_names, &opt, &mut params).unwrap();
+    let total = process_images(&mut image_names, &opt, &mut params).unwrap();
 
     println!("Total decoding time: {}", total);
     println!(
@@ -160,7 +162,7 @@ fn main() {
 }
 
 fn process_images(
-    image_names: &[String],
+    image_names: &mut Vec<String>,
     opt: &Opt,
     params: &mut DecodeParams,
 ) -> Result<f64, String> {
@@ -191,18 +193,62 @@ fn process_images(
     let mut test_time = 0.0;
     let mut warmup = 0;
 
-    while total_processed < opt.total_images {}
+    while total_processed < opt.total_images {
+        read_next_batch(
+            image_names,
+            opt.batch_size,
+            &mut file_data,
+            &file_len,
+            &mut current_names,
+        )
+        .unwrap();
+    }
 
     Ok(0.0)
 }
 
 fn read_next_batch(
-    image_names: &FileNames,
+    image_names: &mut FileNames,
     batch_size: i32,
-    raw_data: &FileData,
+    raw_data: &mut FileData,
     raw_len: &Vec<usize>,
     current_names: &FileNames,
 ) -> Option<f64> {
+
+    image_names.retain(|image_name| File::open(image_name).is_ok());
+
+    // while counter < batch_size as usize {
+    //     if let Some(image_name) = cur_iter.next() {
+    //         let input = File::open(image_name);
+    //         if input.is_err() {
+    //             eprintln!(
+    //                 "Cannot open image: {}, removing it from image list",
+    //                 image_name
+    //             );
+    //             continue;
+    //         }
+    //         let mut input = input.unwrap();
+    //         let file_size = input.metadata().unwrap().len() as usize;
+
+    //         if raw_data[counter].len() < file_size {
+    //             raw_data[counter].resize(file_size, b'0');
+    //         }
+
+    //         match input.read_exact(&mut raw_data[counter]) {
+    //             Err(_) => {
+    //                 eprintln!(
+    //                     "Cannot read from file: {}, removing it from image list",
+    //                     image_name
+    //                 );
+    //                 image_names.remove_item(image_name);
+    //             }
+    //             Ok(_) => {}
+    //         };
+    //     } else {
+    //         cur_iter = image_names.iter_mut();
+    //     }
+    // }
+
     None
 }
 
